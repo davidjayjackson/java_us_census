@@ -1,0 +1,136 @@
+#include <com/sun/star/uno/XInterface.idl>
+#include <com/sun/star/lang/IllegalArgumentException.idl>
+
+module com { module example { module census {
+
+    /** Add-in interface exposing US Census Bureau data (api.census.gov)
+        worksheet functions to LibreOffice Calc.
+
+        Each method maps to a callable Calc function whose display name,
+        description and per-argument help are supplied by
+        config/CalcAddIns.xcu. On bad input, an unknown dataset/variable, or a
+        network failure the methods raise
+        com::sun::star::lang::IllegalArgumentException, which Calc renders as
+        a proper error value (e.g. #VALUE!) in the cell rather than an
+        exception string.
+
+        Unlike FRED, the Census API does not require a key for most
+        low-volume, non-commercial use. Every data-fetching function still
+        takes a trailing optional <em>apiKey</em> argument: when supplied it
+        is used, otherwise the CENSUS_API_KEY environment variable is used if
+        set, and otherwise the request is sent without a key at all. */
+    interface XCensus
+    {
+        interface ::com::sun::star::uno::XInterface;
+
+        /** Run a Census API data query and return the full result table.
+
+            @param year
+                the data year, e.g. 2022. Declared as <em>any</em> so a
+                number or a string cell both work.
+
+            @param dataset
+                the dataset path, e.g. "acs/acs5" (ACS 5-year estimates) or
+                "dec/pl" (decennial redistricting data).
+
+            @param variables
+                comma-separated variable codes to fetch, e.g.
+                "NAME,B01003_001E". Mapped directly to the API's
+                <code>get=</code> parameter.
+
+            @param geography
+                the "for" geography clause value, e.g. "state:*" or
+                "county:*". Mapped to the API's <code>for=</code> parameter.
+
+            @param inGeography
+                optional. The "in" geography clause value, e.g. "state:06",
+                needed when <em>geography</em> is a sub-state level such as
+                county or tract. Declared as <em>any</em> so it may be
+                omitted.
+
+            @param apiKey
+                optional. Census API key; overrides the CENSUS_API_KEY
+                environment variable when supplied. Declared as <em>any</em>
+                so it may be omitted.
+
+            @returns
+                a matrix of rows: the first row is the column headers
+                exactly as returned by the API (variable codes plus
+                geography identifiers), and each subsequent row is one
+                geography's values, all as text (minimal parsing, matching
+                the API's own JSON-array-of-arrays shape).
+         */
+        sequence< sequence< any > > censusGet(
+            [in] any year,
+            [in] string dataset,
+            [in] string variables,
+            [in] string geography,
+            [in] any inGeography,
+            [in] any apiKey )
+            raises ( ::com::sun::star::lang::IllegalArgumentException );
+
+        /** Return a single scalar value for one variable/geography.
+
+            @param year
+                the data year, e.g. 2022.
+            @param dataset
+                the dataset path, e.g. "acs/acs5".
+            @param variable
+                a single variable code, e.g. "B01003_001E".
+            @param geography
+                the "for" geography clause value identifying one specific
+                geography (not a wildcard), e.g. "state:06".
+            @param inGeography
+                optional. The "in" geography clause value. Declared as
+                <em>any</em> so it may be omitted.
+            @param apiKey
+                optional. Census API key; overrides CENSUS_API_KEY when
+                supplied. Declared as <em>any</em> so it may be omitted.
+            @returns
+                the requested value: numeric estimates come back as a
+                number, text fields (e.g. NAME) come back as text, and a
+                null value comes back as an empty cell.
+         */
+        any censusValue(
+            [in] any year,
+            [in] string dataset,
+            [in] string variable,
+            [in] string geography,
+            [in] any inGeography,
+            [in] any apiKey )
+            raises ( ::com::sun::star::lang::IllegalArgumentException );
+
+        /** Return the human-readable label for a variable code, from the
+            dataset's variables.json metadata.
+
+            @param year
+                the data year, e.g. 2022.
+            @param dataset
+                the dataset path, e.g. "acs/acs5".
+            @param variable
+                the variable code to look up, e.g. "B01003_001E".
+            @returns
+                the variable's label, e.g. "Estimate!!Total:".
+         */
+        string censusVarLabel(
+            [in] any year,
+            [in] string dataset,
+            [in] string variable )
+            raises ( ::com::sun::star::lang::IllegalArgumentException );
+
+        /** List the datasets available for a year, from the API's discovery
+            endpoint.
+
+            @param year
+                the data year, e.g. 2022.
+            @returns
+                a matrix of rows: a "Dataset"/"Title" header row, followed by
+                one row per available dataset (its path, e.g. "acs/acs5",
+                and its title).
+         */
+        sequence< sequence< any > > censusDatasets(
+            [in] any year )
+            raises ( ::com::sun::star::lang::IllegalArgumentException );
+    };
+
+}; }; };

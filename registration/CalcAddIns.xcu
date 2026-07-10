@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<oor:component-data
+    xmlns:oor="http://openoffice.org/2001/registry"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    oor:name="CalcAddIns" oor:package="org.openoffice.Office">
+  <node oor:name="AddInInfo">
+    <node oor:name="com.example.census.CensusImpl" oor:op="replace">
+      <node oor:name="AddInFunctions">
+
+        <!-- =CENSUS_GET(year; dataset; variables; geography; [in_geography]; [api_key]) -->
+        <node oor:name="censusGet" oor:op="replace">
+          <prop oor:name="DisplayName">
+            <value xml:lang="en">CENSUS_GET</value>
+          </prop>
+          <prop oor:name="Description">
+            <value xml:lang="en">Runs a Census API data query and returns the full result table (header row plus one row per geography), all values as text.</value>
+          </prop>
+          <prop oor:name="Category">
+            <value>Add-In</value>
+          </prop>
+          <prop oor:name="CompatibilityName">
+            <value xml:lang="en">CENSUS_GET</value>
+          </prop>
+          <node oor:name="Parameters">
+            <node oor:name="year" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">year</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The data year, e.g. 2022.</value>
+              </prop>
+            </node>
+            <node oor:name="dataset" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">dataset</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The dataset path, e.g. "acs/acs5" (ACS 5-year estimates) or "dec/pl".</value>
+              </prop>
+            </node>
+            <node oor:name="variables" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">variables</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">Comma-separated variable codes to fetch, e.g. "NAME,B01003_001E".</value>
+              </prop>
+            </node>
+            <node oor:name="geography" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">geography</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The "for" geography clause, e.g. "state:*" or "county:*".</value>
+              </prop>
+            </node>
+            <node oor:name="inGeography" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">in_geography</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">Optional. The "in" geography clause, e.g. "state:06", needed when geography is a sub-state level such as county or tract.</value>
+              </prop>
+            </node>
+            <node oor:name="apiKey" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">api_key</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">Optional. Census API key; if omitted, the CENSUS_API_KEY environment variable is used, and if that is also unset the request is sent without a key.</value>
+              </prop>
+            </node>
+          </node>
+        </node>
+
+        <!-- =CENSUS_VALUE(year; dataset; variable; geography; [in_geography]; [api_key]) -->
+        <node oor:name="censusValue" oor:op="replace">
+          <prop oor:name="DisplayName">
+            <value xml:lang="en">CENSUS_VALUE</value>
+          </prop>
+          <prop oor:name="Description">
+            <value xml:lang="en">Returns a single scalar value for one variable and one specific geography.</value>
+          </prop>
+          <prop oor:name="Category">
+            <value>Add-In</value>
+          </prop>
+          <prop oor:name="CompatibilityName">
+            <value xml:lang="en">CENSUS_VALUE</value>
+          </prop>
+          <node oor:name="Parameters">
+            <node oor:name="year" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">year</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The data year, e.g. 2022.</value>
+              </prop>
+            </node>
+            <node oor:name="dataset" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">dataset</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The dataset path, e.g. "acs/acs5".</value>
+              </prop>
+            </node>
+            <node oor:name="variable" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">variable</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">A single variable code, e.g. "B01003_001E".</value>
+              </prop>
+            </node>
+            <node oor:name="geography" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">geography</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The "for" geography clause identifying one specific geography (not a wildcard), e.g. "state:06".</value>
+              </prop>
+            </node>
+            <node oor:name="inGeography" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">in_geography</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">Optional. The "in" geography clause, e.g. "state:06", needed when geography is a sub-state level such as county or tract.</value>
+              </prop>
+            </node>
+            <node oor:name="apiKey" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">api_key</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">Optional. Census API key; if omitted, the CENSUS_API_KEY environment variable is used, and if that is also unset the request is sent without a key.</value>
+              </prop>
+            </node>
+          </node>
+        </node>
+
+        <!-- =CENSUS_VARLABEL(year; dataset; variable) -->
+        <node oor:name="censusVarLabel" oor:op="replace">
+          <prop oor:name="DisplayName">
+            <value xml:lang="en">CENSUS_VARLABEL</value>
+          </prop>
+          <prop oor:name="Description">
+            <value xml:lang="en">Returns the human-readable label for a variable code, from the dataset's variables.json metadata.</value>
+          </prop>
+          <prop oor:name="Category">
+            <value>Add-In</value>
+          </prop>
+          <prop oor:name="CompatibilityName">
+            <value xml:lang="en">CENSUS_VARLABEL</value>
+          </prop>
+          <node oor:name="Parameters">
+            <node oor:name="year" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">year</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The data year, e.g. 2022.</value>
+              </prop>
+            </node>
+            <node oor:name="dataset" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">dataset</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The dataset path, e.g. "acs/acs5".</value>
+              </prop>
+            </node>
+            <node oor:name="variable" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">variable</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The variable code to look up, e.g. "B01003_001E".</value>
+              </prop>
+            </node>
+          </node>
+        </node>
+
+        <!-- =CENSUS_DATASETS(year) -->
+        <node oor:name="censusDatasets" oor:op="replace">
+          <prop oor:name="DisplayName">
+            <value xml:lang="en">CENSUS_DATASETS</value>
+          </prop>
+          <prop oor:name="Description">
+            <value xml:lang="en">Lists the datasets available for a year as a spillable (Dataset, Title) array.</value>
+          </prop>
+          <prop oor:name="Category">
+            <value>Add-In</value>
+          </prop>
+          <prop oor:name="CompatibilityName">
+            <value xml:lang="en">CENSUS_DATASETS</value>
+          </prop>
+          <node oor:name="Parameters">
+            <node oor:name="year" oor:op="replace">
+              <prop oor:name="DisplayName">
+                <value xml:lang="en">year</value>
+              </prop>
+              <prop oor:name="Description">
+                <value xml:lang="en">The data year, e.g. 2022.</value>
+              </prop>
+            </node>
+          </node>
+        </node>
+
+      </node>
+    </node>
+  </node>
+</oor:component-data>

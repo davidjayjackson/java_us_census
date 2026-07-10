@@ -1,0 +1,16 @@
+# Build output
+build/
+
+# LibreOffice lock files
+.~lock.*#
+
+# OS / editor cruft
+Thumbs.db
+.DS_Store
+*.swp
+
+# Census API key
+uscensus.api
+
+# Claude Code local settings
+.claude/
