@@ -23,9 +23,13 @@ arguments can simply be left off the end of the formula).
   (county, tract, block group, ...).
 - **`api_key`** (where present) overrides the `CENSUS_API_KEY` environment
   variable for that one call. Type it literally or reference a cell, e.g.
-  `$B$1`. If both are omitted, the request is sent **without a key** — the
-  Census API allows this for low-volume, non-commercial use (see
-  [INSTALL.md](INSTALL.md#2-provide-the-census-api-key-optional-never-hardcoded)).
+  `$B$1`. **`CENSUS_GET` and `CENSUS_VALUE` require a key** — one or the
+  other must be set, or the call raises a Calc error value (the API answers
+  a keyless data request with a redirect to an HTML "missing key" page
+  rather than data; see
+  [INSTALL.md](INSTALL.md#2-provide-the-census-api-key-required-for-census_getcensus_value-never-hardcoded)).
+  `CENSUS_VARLABEL` and `CENSUS_DATASETS` are metadata/discovery endpoints
+  and never need a key, so they have no `api_key` argument.
 - **Caching**: every distinct request URL is cached for the life of the
   LibreOffice session, so recalculating a sheet does not re-hit the API.
   Restart LibreOffice to clear the cache.
@@ -55,7 +59,7 @@ CENSUS_GET(year; dataset; variables; geography; [in_geography]; [api_key])
 | `variables` | text | yes | Comma-separated variable codes, e.g. `"NAME,B01003_001E"`. Mapped to the API's `get=` parameter. |
 | `geography` | text | yes | The `for=` clause, e.g. `"state:*"`. May list several specific geographies, e.g. `"state:06,36,48"`. |
 | `in_geography` | text | no | The `in=` clause, e.g. `"state:06"`. |
-| `api_key` | text | no | Overrides `CENSUS_API_KEY` for this call. |
+| `api_key` | text | **yes, or via env var** | Overrides `CENSUS_API_KEY` for this call. A key must come from one or the other. |
 
 **Returns**: a rectangular array. Row 1 is the column headers exactly as the
 API returns them (variable codes, then geography identifier columns such as
@@ -64,7 +68,8 @@ cell is returned as **text**, matching the API's own JSON-array-of-arrays
 shape with minimal parsing — wrap numeric columns in `VALUE()` if you need
 them as numbers for arithmetic.
 
-**Errors**: `dataset`/`variables`/`geography` empty, an unknown dataset or
+**Errors**: `dataset`/`variables`/`geography` empty, no API key available
+(neither the argument nor `CENSUS_API_KEY` set), an unknown dataset or
 variable, a malformed geography clause, or a network failure all raise a
 Calc error value. A query that legitimately returns zero rows (nothing
 matched) is also an error, since a table with no data is never useful in a
@@ -103,14 +108,15 @@ CENSUS_VALUE(year; dataset; variable; geography; [in_geography]; [api_key])
 | `variable` | text | yes | A single variable code, e.g. `"B01003_001E"`. |
 | `geography` | text | yes | The `for=` clause identifying **one specific geography**, e.g. `"state:06"` — not a wildcard (see Notes). |
 | `in_geography` | text | no | The `in=` clause, e.g. `"state:06"`. |
-| `api_key` | text | no | Overrides `CENSUS_API_KEY` for this call. |
+| `api_key` | text | **yes, or via env var** | Overrides `CENSUS_API_KEY` for this call. A key must come from one or the other. |
 
 **Returns**: the requested value from the first (and normally only) data row —
 a **number** when it parses as one (most ACS estimates), **text** for
 string fields (e.g. `NAME`), or an **empty cell** when the API returns a
 null value for that variable/geography.
 
-**Errors**: `dataset`/`variable`/`geography` empty, no data row returned for
+**Errors**: `dataset`/`variable`/`geography` empty, no API key available
+(neither the argument nor `CENSUS_API_KEY` set), no data row returned for
 the query, or the requested variable not present in the response header
 (e.g. a typo in the variable code) all raise a Calc error value.
 

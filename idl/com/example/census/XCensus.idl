@@ -14,11 +14,14 @@ module com { module example { module census {
         a proper error value (e.g. #VALUE!) in the cell rather than an
         exception string.
 
-        Unlike FRED, the Census API does not require a key for most
-        low-volume, non-commercial use. Every data-fetching function still
-        takes a trailing optional <em>apiKey</em> argument: when supplied it
-        is used, otherwise the CENSUS_API_KEY environment variable is used if
-        set, and otherwise the request is sent without a key at all. */
+        censusGet and censusValue require a key: the API answers a keyless
+        data request with a redirect to an HTML "missing key" page rather
+        than data, which this component detects and reports as a clear
+        error. Both take a trailing optional <em>apiKey</em> argument: when
+        supplied it is used, otherwise the CENSUS_API_KEY environment
+        variable is used. censusVarLabel and censusDatasets are metadata and
+        discovery endpoints that genuinely need no key, so they take no
+        <em>apiKey</em> argument. */
     interface XCensus
     {
         interface ::com::sun::star::uno::XInterface;
@@ -49,9 +52,10 @@ module com { module example { module census {
                 omitted.
 
             @param apiKey
-                optional. Census API key; overrides the CENSUS_API_KEY
-                environment variable when supplied. Declared as <em>any</em>
-                so it may be omitted.
+                a Census API key; overrides the CENSUS_API_KEY environment
+                variable when supplied. Declared as <em>any</em> so it may be
+                omitted from the formula, but a key must come from one or the
+                other -- the API rejects keyless data requests.
 
             @returns
                 a matrix of rows: the first row is the column headers
@@ -84,8 +88,10 @@ module com { module example { module census {
                 optional. The "in" geography clause value. Declared as
                 <em>any</em> so it may be omitted.
             @param apiKey
-                optional. Census API key; overrides CENSUS_API_KEY when
-                supplied. Declared as <em>any</em> so it may be omitted.
+                a Census API key; overrides CENSUS_API_KEY when supplied.
+                Declared as <em>any</em> so it may be omitted from the
+                formula, but a key must come from one or the other -- the
+                API rejects keyless data requests.
             @returns
                 the requested value: numeric estimates come back as a
                 number, text fields (e.g. NAME) come back as text, and a

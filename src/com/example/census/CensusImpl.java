@@ -247,8 +247,8 @@ public final class CensusImpl extends WeakBase
 
     private static final String ARG_KEY = "api_key";
     private static final String ARG_KEY_DESC =
-        "Optional. Census API key; if omitted, the CENSUS_API_KEY environment variable is "
-        + "used, and if that is also unset the request is sent without a key.";
+        "Census API key; if omitted, the CENSUS_API_KEY environment variable is used. "
+        + "A key from one or the other is required -- the API rejects keyless data requests.";
     private static final String ARG_IN = "in_geography";
     private static final String ARG_IN_DESC =
         "Optional. The \"in\" geography clause, e.g. \"state:06\", needed when geography is "

@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.1
+
+- **Correction**: the Census API no longer honors keyless low-volume requests for
+  `CENSUS_GET`/`CENSUS_VALUE` -- a keyless data request now redirects to an HTML
+  "missing key" page. Docs (README, INSTALL.md, FUNCTIONS.md/.pdf) updated to state
+  the key is required for those two functions; `CENSUS_VARLABEL`/`CENSUS_DATASETS`
+  still genuinely need no key. Found and verified live while checking the v1.2.0
+  release install end to end.
+- `CensusClient` now detects that redirect (via the API's `X-DataWebAPI-KeyError`
+  header) and raises a clear "Census API key required" error instead of failing
+  later with a confusing JSON-parse error. Also detects an HTML response more
+  generally as a fallback.
+
 ## 1.2.0
 
 - Add `docs/FUNCTIONS.md`, a complete reference for all four functions (every

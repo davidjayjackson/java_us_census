@@ -68,7 +68,7 @@
                 <value xml:lang="en">api_key</value>
               </prop>
               <prop oor:name="Description">
-                <value xml:lang="en">Optional. Census API key; if omitted, the CENSUS_API_KEY environment variable is used, and if that is also unset the request is sent without a key.</value>
+                <value xml:lang="en">Census API key; if omitted, the CENSUS_API_KEY environment variable is used. A key from one or the other is required -- the API rejects keyless data requests.</value>
               </prop>
             </node>
           </node>
@@ -134,7 +134,7 @@
                 <value xml:lang="en">api_key</value>
               </prop>
               <prop oor:name="Description">
-                <value xml:lang="en">Optional. Census API key; if omitted, the CENSUS_API_KEY environment variable is used, and if that is also unset the request is sent without a key.</value>
+                <value xml:lang="en">Census API key; if omitted, the CENSUS_API_KEY environment variable is used. A key from one or the other is required -- the API rejects keyless data requests.</value>
               </prop>
             </node>
           </node>

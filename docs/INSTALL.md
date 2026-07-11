@@ -15,7 +15,9 @@ data as worksheet formulas:
 >
 > `CENSUS_GET` and `CENSUS_VALUE` take two optional trailing arguments: **`in_geography`**
 > (the API's `in=` clause, e.g. `"state:06"`, needed for sub-state geographies) and
-> **`api_key`** (overrides the environment variable, typed literally or as a cell reference).
+> **`api_key`** (overrides the `CENSUS_API_KEY` environment variable, typed literally or as
+> a cell reference). One or the other is **required** for these two functions — see
+> [§2](#2-provide-the-census-api-key-required-for-census_getcensus_value-never-hardcoded).
 
 ---
 
@@ -114,20 +116,25 @@ Confirm the tools resolve:
 "$JAVA_HOME/bin/javac" -version          # any 8+
 ```
 
-## 2. Provide the Census API key (optional, never hardcoded)
+## 2. Provide the Census API key (required for CENSUS_GET/CENSUS_VALUE, never hardcoded)
 
-The Census API allows **keyless** requests for low-volume, non-commercial use, so this
-step is optional — but a key raises your rate limit. Get a free one at
-<https://api.census.gov/data/key_signup.html>.
+**`CENSUS_GET` and `CENSUS_VALUE` require a key.** Older Census API documentation describes
+a keyless allowance for low-volume, non-commercial use, but the live API no longer honors
+that for data queries — a keyless request comes back as a redirect to an HTML "missing key"
+page, which the add-in detects and reports as a clear error rather than a cryptic parse
+failure. `CENSUS_VARLABEL` and `CENSUS_DATASETS` are metadata/discovery endpoints and
+genuinely don't need a key. Get a free one at <https://api.census.gov/data/key_signup.html>.
 
-Three ways, in priority order:
+Two ways, in priority order:
 
 1. **The `api_key` function argument** — the optional trailing argument of `CENSUS_GET`
    and `CENSUS_VALUE`. Type it literally, or (recommended) put it in one cell and
    reference that cell: `=CENSUS_VALUE(2022; "acs/acs5"; "B01003_001E"; "state:06"; ""; $B$1)`.
    Wins when supplied.
 2. **The `CENSUS_API_KEY` environment variable** — used whenever the argument is omitted.
-3. **Neither** — the request is sent without a key at all.
+
+If neither is set, `CENSUS_GET`/`CENSUS_VALUE` calls return a Calc error value; see
+*Troubleshooting* below.
 
 The key is never hardcoded in the add-in. Set it **for the LibreOffice process** — i.e. set
 it, then launch `soffice` from that same shell (or set it as a persistent user env var and
@@ -209,8 +216,8 @@ Close LibreOffice first, then use `unopkg` from the program dir:
 ```
 
 You can also install by double-clicking `build\Census.oxt` (opens the Extension Manager).
-After installing, **restart LibreOffice** from a shell that has `CENSUS_API_KEY` set, if
-you're using one (step 2).
+After installing, **restart LibreOffice** from a shell that has `CENSUS_API_KEY` set (step 2)
+if you want `CENSUS_GET`/`CENSUS_VALUE` to work.
 
 Linux / macOS:
 
@@ -247,9 +254,10 @@ For a county within a state (needs the `in_geography` argument):
 
 ## Behavior notes
 
-- **Errors → Calc error values.** Bad datasets/variables/years, no data for a geography, or
-  a network failure raise a UNO exception, which Calc shows as an error value (e.g.
-  `Err:502`) in the cell — not an exception string.
+- **Errors → Calc error values.** Bad datasets/variables/years, no data for a geography, a
+  missing API key on `CENSUS_GET`/`CENSUS_VALUE`, or a network failure all raise a UNO
+  exception, which Calc shows as an error value (e.g. `Err:502`) in the cell — not an
+  exception string.
 - **Multi-cell / spilling.** To get all rows of `CENSUS_GET` or `CENSUS_DATASETS`, select the
   output range and enter it as an **array formula** — Ctrl+Shift+Enter, or tick **Array** in
   the Function Wizard. A single-cell entry shows only the first value.
@@ -273,7 +281,7 @@ For a county within a state (needs the `in_geography` argument):
 functions plus the error paths against live Census data:
 
 ```powershell
-$env:CENSUS_API_KEY = 'your_key'   # optional
+$env:CENSUS_API_KEY = 'your_key'   # required for CENSUS_GET/CENSUS_VALUE
 & 'C:\Program Files\LibreOffice\program\soffice.exe' --headless --norestore --accept="socket,host=localhost,port=2002;urp;"
 & 'C:\Program Files\LibreOffice\program\python.exe' tools\test_census.py   # prints RESULT: PASS
 ```
@@ -282,7 +290,7 @@ Linux / macOS — same idea, LibreOffice's bundled `python` (it ships the `uno` 
 instead of `python.exe`, run in the background so the shell isn't blocked:
 
 ```bash
-export CENSUS_API_KEY='your_key'   # optional
+export CENSUS_API_KEY='your_key'   # required for CENSUS_GET/CENSUS_VALUE
 "$LO_HOME/program/soffice" --headless --norestore --accept="socket,host=localhost,port=2002;urp;" &
 "$LO_HOME/program/python" tools/test_census.py   # prints RESULT: PASS
 ```
@@ -293,6 +301,9 @@ export CENSUS_API_KEY='your_key'   # optional
   path; the SDK must be installed (it is a separate download from LibreOffice).
 - Functions show `#NAME?` → the extension isn't registered; confirm with `unopkg list` and
   restart LibreOffice.
+- Every `CENSUS_GET`/`CENSUS_VALUE` cell is an error value (`Err:502`) but `CENSUS_VARLABEL`/
+  `CENSUS_DATASETS` work fine → you're missing an API key (step 2); the data-query endpoint
+  requires one even for a single request.
 - Every Census cell is an error value (`Err:502`) → check the dataset/variable/year are
   valid, or that geography syntax is correct (e.g. `"state:*"`, not `"states:*"`).
 - `unopkg add` fails with `CannotRegisterImplementationException: Could not create Java

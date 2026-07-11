@@ -14,8 +14,11 @@ Census API:
 
 - Base: `https://api.census.gov/data`. Requests take the form
   `https://api.census.gov/data/{year}/{dataset}?get={variables}&for={geography}&key={API_KEY}`.
-- The key is optional for most low-volume, non-commercial use — never hardcoded; read from an
-  environment variable, a function argument, or a config file.
+- A key is required for the data-query functions (`CENSUS_GET`/`CENSUS_VALUE`) — the API
+  answers a keyless data request with a redirect to an HTML "missing key" page rather than
+  data. The metadata/discovery functions (`CENSUS_VARLABEL`/`CENSUS_DATASETS`) do not need
+  one. Never hardcoded — read from an environment variable, a function argument, or a config
+  file.
 - Response format is a JSON array where the first row is headers and subsequent rows are data.
 
 Functions implemented:
@@ -56,10 +59,10 @@ on LibreOffice 26.2 (Linux dev machine; targets Windows per the spec above).
 ### Quick start (build from source)
 
 ```bash
-export CENSUS_API_KEY='your_key'          # optional, never hardcoded
+export CENSUS_API_KEY='your_key'          # required for CENSUS_GET/CENSUS_VALUE, never hardcoded
 ./build.sh --libreoffice ~/libreoffice26.2 --jdk ~/jdks/jdk8u492-b09
 "$LO_HOME/program/unopkg" add --force build/Census.oxt
-# then launch LibreOffice from an environment where CENSUS_API_KEY is set (if using one)
+# then launch LibreOffice from an environment where CENSUS_API_KEY is set
 ```
 
 Windows: `pwsh -File build.ps1` (see `docs/INSTALL.md` for prerequisites and the Java-vendor
@@ -79,7 +82,7 @@ UNO API to enter the formulas, recalculate, and save the file — regenerate it 
 the add-in with:
 
 ```bash
-export CENSUS_API_KEY='your_key'   # optional
+export CENSUS_API_KEY='your_key'   # required for the CENSUS_GET/CENSUS_VALUE cells in the demo
 "$LO_HOME/program/soffice" --headless --norestore --accept="socket,host=localhost,port=2002;urp;" &
 "$LO_HOME/program/python" tools/build_demo.py
 ```
@@ -90,10 +93,13 @@ Key implementation notes:
   standard library), so it runs on the JRE LibreOffice accepts by default — no runtime JRE
   reconfiguration needed. (`java.net.http.HttpClient` would need Java 11+; see `docs/INSTALL.md`
   for why this project targets Java 8 instead, matching the other add-ins in this environment.)
-- **API key is optional**: the Census API allows keyless requests for low-volume,
-  non-commercial use. Every data-fetching function takes an optional trailing `api_key`
-  argument (type it, or reference a cell); when omitted, the `CENSUS_API_KEY` environment
-  variable is used if set, and otherwise the request is simply sent without a key.
+- **API key is required for `CENSUS_GET`/`CENSUS_VALUE`**: despite older documentation
+  suggesting the Census API allows keyless low-volume use, a keyless data request is now
+  answered with a redirect to an HTML "missing key" page — the add-in detects this and
+  raises a clear error rather than trying (and failing) to parse that page as JSON. Both
+  functions take an optional trailing `api_key` argument (type it, or reference a cell);
+  when omitted, the `CENSUS_API_KEY` environment variable is used. `CENSUS_VARLABEL` and
+  `CENSUS_DATASETS` genuinely don't need a key (metadata/discovery endpoints).
 - **Geography**: `geography` maps to the API's `for=` clause (e.g. `"state:*"`, `"county:*"`).
   An optional trailing `in_geography` argument maps to `in=` (e.g. `"state:06"`), needed for
   sub-state geographies like county or tract.

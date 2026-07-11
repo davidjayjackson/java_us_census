@@ -23,11 +23,18 @@ import java.util.concurrent.ConcurrentHashMap;
  *       a Calc recalculation (which may re-invoke every formula) does not hammer
  *       the API. The cache lives for the office session, i.e. as long as the
  *       component stays loaded.</li>
- *   <li>Unlike FRED, the Census API does not require a key for most low-volume,
- *       non-commercial use, so a missing key is not an error here: it is read
- *       from the {@code CENSUS_API_KEY} environment variable (falling back to
- *       the {@code census.api.key} Java system property) and simply omitted
- *       from the request if never set. See docs/INSTALL.md.</li>
+ *   <li>The key is read from the {@code CENSUS_API_KEY} environment variable
+ *       (falling back to the {@code census.api.key} Java system property) and
+ *       simply omitted from the request if never set -- this class does not
+ *       reject a missing key client-side, since whether one is actually
+ *       required depends on the endpoint: the data-query endpoint currently
+ *       requires a key even for a single low-volume request (it answers a
+ *       keyless request with a redirect to an HTML "missing key" page rather
+ *       than the documented low-volume allowance), while the metadata and
+ *       discovery endpoints ({@code variables.json}, {@code {year}.json}) do
+ *       not. A keyless data query is still attempted and, if the API rejects
+ *       it, {@link #fetch} turns that redirect into a clear error rather than
+ *       failing later with a confusing JSON-parse error. See docs/INSTALL.md.</li>
  * </ul>
  */
 final class CensusClient {
@@ -46,9 +53,10 @@ final class CensusClient {
     /**
      * Resolve the API key. An explicit key (the optional function argument)
      * wins; otherwise fall back to the CENSUS_API_KEY environment variable,
-     * then the census.api.key system property. Unlike FRED, a missing key is
-     * not an error: {@code null} is returned and the request is simply sent
-     * without a {@code key=} parameter.
+     * then the census.api.key system property. A missing key is not rejected
+     * here: {@code null} is returned and the request is sent without a
+     * {@code key=} parameter, leaving it to the API (and {@link #fetch}) to
+     * decide whether that's acceptable for the endpoint being called.
      */
     private static String resolveApiKey(String explicit) {
         if (explicit != null && !explicit.trim().isEmpty()) {
@@ -110,8 +118,24 @@ final class CensusClient {
             conn.setReadTimeout(READ_TIMEOUT_MS);
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept", "application/json");
+            // Surface a missing-key request as the redirect it actually is,
+            // rather than silently following it into the HTML "Missing Key"
+            // page and failing later with a confusing JSON-parse error.
+            conn.setInstanceFollowRedirects(false);
 
             int status = conn.getResponseCode();
+            if (status >= 300 && status < 400) {
+                String keyError = conn.getHeaderField("X-DataWebAPI-KeyError");
+                if (keyError != null && !keyError.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "Census API key required for this request. Supply one via the "
+                            + "api_key argument or the CENSUS_API_KEY environment variable "
+                            + "(sign up at https://api.census.gov/data/key_signup.html).");
+                }
+                throw new IllegalArgumentException(
+                        "Census API returned an unexpected redirect (HTTP " + status + ") to "
+                        + conn.getHeaderField("Location"));
+            }
             if (status != 200) {
                 // The Census API returns plain-text error bodies (not JSON) for
                 // bad requests, e.g. "error: unknown variable 'X'".
@@ -119,6 +143,13 @@ final class CensusClient {
                 throw new IllegalArgumentException(
                         "Census API returned HTTP " + status
                         + (body.trim().isEmpty() ? "" : ": " + body.trim()));
+            }
+            String contentType = conn.getContentType();
+            if (contentType != null
+                    && contentType.toLowerCase(java.util.Locale.ROOT).contains("html")) {
+                throw new IllegalArgumentException(
+                        "Census API returned an HTML page instead of JSON for this request "
+                        + "-- check that year/dataset/variables/geography are correct.");
             }
             Object root = Json.parse(readAll(conn.getInputStream()));
             CACHE.put(url, root);
