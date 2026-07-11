@@ -3,7 +3,7 @@
     xmlns="http://openoffice.org/extensions/description/2006"
     xmlns:xlink="http://www.w3.org/1999/xlink">
   <identifier value="com.example.census"/>
-  <version value="1.2.1"/>
+  <version value="1.3.0"/>
   <display-name>
     <name lang="en">US Census Calc Add-In</name>
   </display-name>

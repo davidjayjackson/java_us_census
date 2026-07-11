@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+
+- Version bump only, no functional changes to the add-in, code, or docs.
+
 ## 1.2.1
 
 - **Correction**: the Census API no longer honors keyless low-volume requests for
