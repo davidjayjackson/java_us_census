@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0
+
+- Add `docs/FUNCTIONS.md`, a complete reference for all four functions (every
+  argument, return shape, error conditions, and examples), with every formula
+  verified live against the API.
+- Add `docs/FUNCTIONS.pdf`, a styled, paginated render of the same reference
+  for offline/print use.
+
 ## 1.1.0
 
 - Add `demo/Census-Demo.ods`, a spreadsheet with live `CENSUS_*` formulas already
