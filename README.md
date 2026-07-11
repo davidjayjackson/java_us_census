@@ -45,6 +45,8 @@ on LibreOffice 26.2 (Linux dev machine; targets Windows per the spec above).
 | `registration/{manifest,description}.xml`, `MANIFEST.MF` | `.oxt` manifest, extension metadata, jar `RegistrationClassName` |
 | `build.sh` / `build.ps1` | `unoidl-write` → `javamaker` → `javac` (Java 8) → `jar` → zip `.oxt` |
 | `tools/test_census.py` | Headless end-to-end test (all 4 functions + error paths) |
+| `tools/build_demo.py` | Regenerates the demo spreadsheet |
+| `demo/Census-Demo.ods` | Demo spreadsheet with live formulas and computed results |
 | `docs/INSTALL.md` | Full build / install / run instructions |
 
 ### Quick start (build from source)
@@ -58,6 +60,25 @@ export CENSUS_API_KEY='your_key'          # optional, never hardcoded
 
 Windows: `pwsh -File build.ps1` (see `docs/INSTALL.md` for prerequisites and the Java-vendor
 allow-list note).
+
+### Demo
+
+`demo/Census-Demo.ods` is a real spreadsheet with `CENSUS_*` formulas already entered and
+computed against live Census data — open it to see the functions working without typing
+anything (it needs the add-in installed first, see above, or the formulas show `#NAME?`).
+It covers all four functions: scalar `CENSUS_VALUE`/`CENSUS_VARLABEL` calls, a compact
+`CENSUS_GET` array formula for three states, a full `CENSUS_GET` array formula using
+`in_geography` (every California county), and a `CENSUS_DATASETS` slice.
+
+It was generated with `tools/build_demo.py`, which drives a headless Calc instance over the
+UNO API to enter the formulas, recalculate, and save the file — regenerate it after changing
+the add-in with:
+
+```bash
+export CENSUS_API_KEY='your_key'   # optional
+"$LO_HOME/program/soffice" --headless --norestore --accept="socket,host=localhost,port=2002;urp;" &
+"$LO_HOME/program/python" tools/build_demo.py
+```
 
 Key implementation notes:
 
