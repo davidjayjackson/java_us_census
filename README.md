@@ -25,6 +25,9 @@ Functions implemented:
 - `CENSUS_VARLABEL(year; dataset; variable)` — human-readable label for a variable code.
 - `CENSUS_DATASETS(year)` — list available datasets for a year.
 
+See [docs/FUNCTIONS.md](docs/FUNCTIONS.md) for the complete reference (every argument,
+return shape, error conditions, and worked examples for all four functions).
+
 ---
 
 ## Implementation
@@ -48,6 +51,7 @@ on LibreOffice 26.2 (Linux dev machine; targets Windows per the spec above).
 | `tools/build_demo.py` | Regenerates the demo spreadsheet |
 | `demo/Census-Demo.ods` | Demo spreadsheet with live formulas and computed results |
 | `docs/INSTALL.md` | Full build / install / run instructions |
+| `docs/FUNCTIONS.md` | Complete function reference: every argument, return shape, errors, examples |
 
 ### Quick start (build from source)
 
